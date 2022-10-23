@@ -15,25 +15,48 @@ def image_class(event, context):
   import pandas as pd
   from pandas import DataFrame
 
-  model = keras.models.load_model('s3://aggie-map-ml-model/404-Aug3/') # need to change path to S3
+  model = keras.models.load_model('404-KCV/') # need to change path to S3
 
   # label our data in batches
-  CLASS_NAMES = ['CHEN1', 'CHEN2', 'CHEN3', 'CVLB1', 'CVLB2', 'DLEB1', 'ETB1', 'ETB2', 'ETB3', 'ETB4', 'ETB5', 'HEB1', 'HEB2', 'HEB3', 'HEB4', 'MEOB1', 'MEOB2', 'MEOB3', 'PETE1', 'PETE2', 'PETE3', 'WEB1', 'WEB2', 'WEB3', 'WEB4', 'ZACH1', 'ZACH2', 'ZACH3', 'ZACH4', 'ZACH5', 'ZACH6']
+  # Old: CLASS_NAMES = ['CHEN1', 'CHEN2', 'CHEN3', 'CVLB1', 'CVLB2', 'DLEB1', 'ETB1', 'ETB2', 'ETB3', 'ETB4', 'ETB5', 'HEB1', 'HEB2', 'HEB3', 'HEB4', 'MEOB1', 'MEOB2', 'MEOB3', 'PETE1', 'PETE2', 'PETE3', 'WEB1', 'WEB2', 'WEB3', 'WEB4', 'ZACH1', 'ZACH2', 'ZACH3', 'ZACH4', 'ZACH5', 'ZACH6']
+  CLASS_NAMES= ['ZACH6', 'ZACH5', 'ZACH4', 'ZACH3', 'ZACH2', 'ZACH1', 'WEB4', 'WEB3', 'WEB2', 'WEB1', 'PETE3', 'PETE2', 'PETE1', 'MEOB3', 'MEOB2', 'MEOB1', 'HEB4', 'HEB3', 'HEB2', 'HEB1', 'ETB5', 'ETB4', 'ETB3', 'ETB2', 'ETB1', 'DLEB1', 'CVLB2', 'CVLB1', 'CHEN3', 'CHEN2', 'CHEN1']
 
   # Prediction
   from keras.preprocessing import image
   imagepath = 's3://user-input-image/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg' # need to do user image
-  img = image.load_img(imagepath,target_size=(224,224))
-  img = np.asarray(img)
-  img = np.expand_dims(img, axis=0)
+  import boto3
+  s3 = boto3.resource('s3')
+  s3.Bucket('user-input-image').download_file('IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg', '/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  #response = s3.get_object(Bucket='user-input-image',Key='IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg',)
+  #img_read = response['Body'].read()
+  #import base64
+  #import io
+  #b = base64.b64decode(img_read)
+  #image_p = Image.open(io.BytesIO(b))
+  #image_p.save('img.jpg')
+  image = Image.open('/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  # old: image = Image.open(imagepath)
+  small_image = image.resize((224,224)) # input size for VGG16 224,224
+  small_imgarr = np.array(small_image)
+  img = np.expand_dims(small_imgarr, axis=0)
   output = model.predict(img)
   print(np.argmax(output), CLASS_NAMES[np.argmax(output)], np.max(output))
 
   # CHANGE IMAGES TO IMPORT FROM S3
-  df = pd.read_csv('s3://augmented-database-31000/BigCSV.csv')
+  s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
+  df = pd.read_csv('/tmp/BigCSV.csv')
   ImageList = [] # list for images
+  # Set up client to read images from S3
+  s3_client = boto3.client('s3')
+
   for i in range(0, 31000): # total number of images in dataset
-    imagepath = 's3://augmented-database-31000/404MegaDS - Numeric/IMG_' + df['FileName'][i][4:10] + '.jpg'
+    key = 'IMG_' + df['FileName'][i][4:10] + '.jpg'
+    object_key = str(uuid.uuid4()) + '-' + key
+    imagepath = '/tmp/{}'.format(object_key)
+    with open(imagepath,'wb') as img_file:
+        s3_client.download_fileobj(source_bucket, key, img_file)
+
+    #imagepath = 's3://augmented-database-31000/404MegaDS/IMG_' + df['FileName'][i][4:10] + '.jpg'
     image = Image.open(imagepath)
     small_image = image.resize((224,224)) # input size for VGG16 224,224
     small_imgarr = np.array(small_image)
@@ -106,63 +129,63 @@ def image_class(event, context):
   idx31 = []
 
 
-  for i in range (0,1000): # CHEN1 (0g 0-500) 0-499 = 1-500
+  for i in range (0,1000): # ZACH6
     Sim1.append(ImageList[i])
     idx1.append(i)
 
-  for i in range (1000, 2000): # CHEN2 500-1000 = 501 - 1000
+  for i in range (1000, 2000): # ZACH5
     Sim2.append(ImageList[i])
     idx2.append(i)
 
-  for i in range(2000, 3000): # CHEN3 1000-1500 = 1001 - 1500
+  for i in range(2000, 3000): # ZACH4
     Sim3.append(ImageList[i])
     idx3.append(i)
 
-  for i in range(3000, 4000): # CVLB1
+  for i in range(3000, 4000): # ZACH3
     Sim4.append(ImageList[i])
     idx4.append(i)
 
-  for i in range(4000, 5000): # CVLB2
+  for i in range(4000, 5000): # ZACH2
     Sim5.append(ImageList[i])
     idx5.append(i)
 
-  for i in range(5000, 6000): # DLEB1
+  for i in range(5000, 6000): # ZACH1
     Sim6.append(ImageList[i])
     idx6.append(i)
 
-  for i in range(6000, 7000): # ETB1
+  for i in range(6000, 7000): # WEB4
     Sim7.append(ImageList[i])
     idx7.append(i)
 
-  for i in range(7000, 8000): # ETB2
+  for i in range(7000, 8000): # WEB3
     Sim8.append(ImageList[i])
     idx8.append(i)
 
-  for i in range(8000, 9000): # ETB3
+  for i in range(8000, 9000): # WEB2
     Sim9.append(ImageList[i])
     idx9.append(i)
 
-  for i in range(9000, 10000): # ETB4
+  for i in range(9000, 10000): # WEB1
     Sim10.append(ImageList[i])
     idx10.append(i)
 
-  for i in range(10000, 11000): # ETB5
+  for i in range(10000, 11000): # PETE3
     Sim11.append(ImageList[i])
     idx11.append(i)
 
-  for i in range(11000, 12000): # HEB1
+  for i in range(11000, 12000): # PETE2
     Sim12.append(ImageList[i])
     idx12.append(i)
 
-  for i in range(12000, 13000): # HEB2
+  for i in range(12000, 13000): # PETE1
     Sim13.append(ImageList[i])
     idx13.append(i)
 
-  for i in range(13000, 14000): # HEB3
+  for i in range(13000, 14000): # MEOB3
     Sim14.append(ImageList[i])
     idx14.append(i)
 
-  for i in range(14000, 15000): # HEB4
+  for i in range(14000, 15000): # MEOB2
     Sim15.append(ImageList[i])
     idx15.append(i)
 
@@ -170,63 +193,63 @@ def image_class(event, context):
     Sim16.append(ImageList[i])
     idx16.append(i)
 
-  for i in range(16000, 17000): # MEOB2
+  for i in range(16000, 17000): # HEB4
     Sim17.append(ImageList[i])
     idx17.append(i)
 
-  for i in range(17000, 18000): # MEOB3
+  for i in range(17000, 18000): # HEB3
     Sim18.append(ImageList[i])
     idx18.append(i)
 
-  for i in range(18000, 19000): # PETE1
+  for i in range(18000, 19000): # HEB2
     Sim19.append(ImageList[i])
     idx19.append(i)
 
-  for i in range(19000, 20000): # PETE2
+  for i in range(19000, 20000): # HEB1
     Sim20.append(ImageList[i])
     idx20.append(i)
 
-  for i in range(20000, 21000): # PETE3
+  for i in range(20000, 21000): # ETB5
     Sim21.append(ImageList[i])
     idx21.append(i)
 
-  for i in range(21000, 22000): # WEB1
+  for i in range(21000, 22000): # ETB4
     Sim22.append(ImageList[i])
     idx22.append(i)
 
-  for i in range(22000, 23000): # WEB2
+  for i in range(22000, 23000): # ETB3
     Sim23.append(ImageList[i])
     idx23.append(i)
 
-  for i in range(23000, 24000): # WEB3
+  for i in range(23000, 24000): # ETB2
     Sim24.append(ImageList[i])
     idx24.append(i)
 
-  for i in range(24000, 25000): # WEB4
+  for i in range(24000, 25000): # ETB1
     Sim25.append(ImageList[i])
     idx25.append(i)
 
-  for i in range(25000, 26000): # ZACH1
+  for i in range(25000, 26000): # DLEB1
     Sim26.append(ImageList[i])
     idx26.append(i)
 
-  for i in range(26000, 27000): # ZACH2
+  for i in range(26000, 27000): # CVLB2
     Sim27.append(ImageList[i])
     idx27.append(i)
 
-  for i in range(27000, 28000): # ZACH3
+  for i in range(27000, 28000): # CVLB1
     Sim28.append(ImageList[i])
     idx28.append(i)
 
-  for i in range(28000, 29000): # ZACH4
+  for i in range(28000, 29000): # CHEN3
     Sim29.append(ImageList[i])
     idx29.append(i)
 
-  for i in range(29000, 30000): # ZACH5
+  for i in range(29000, 30000): # CHEN2
     Sim30.append(ImageList[i])
     idx30.append(i)
 
-  for i in range(30000, 31000): # ZACH6
+  for i in range(30000, 31000): # CHEN1
     Sim31.append(ImageList[i])
     idx31.append(i)
 
