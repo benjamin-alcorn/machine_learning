@@ -18,7 +18,6 @@ def image_class(event, context):
   model = keras.models.load_model('404-KCV/') # need to change path to S3
 
   # label our data in batches
-  # Old: CLASS_NAMES = ['CHEN1', 'CHEN2', 'CHEN3', 'CVLB1', 'CVLB2', 'DLEB1', 'ETB1', 'ETB2', 'ETB3', 'ETB4', 'ETB5', 'HEB1', 'HEB2', 'HEB3', 'HEB4', 'MEOB1', 'MEOB2', 'MEOB3', 'PETE1', 'PETE2', 'PETE3', 'WEB1', 'WEB2', 'WEB3', 'WEB4', 'ZACH1', 'ZACH2', 'ZACH3', 'ZACH4', 'ZACH5', 'ZACH6']
   CLASS_NAMES= ['ZACH6', 'ZACH5', 'ZACH4', 'ZACH3', 'ZACH2', 'ZACH1', 'WEB4', 'WEB3', 'WEB2', 'WEB1', 'PETE3', 'PETE2', 'PETE1', 'MEOB3', 'MEOB2', 'MEOB1', 'HEB4', 'HEB3', 'HEB2', 'HEB1', 'ETB5', 'ETB4', 'ETB3', 'ETB2', 'ETB1', 'DLEB1', 'CVLB2', 'CVLB1', 'CHEN3', 'CHEN2', 'CHEN1']
 
   # Prediction
@@ -27,15 +26,7 @@ def image_class(event, context):
   import boto3
   s3 = boto3.resource('s3')
   s3.Bucket('user-input-image').download_file('IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg', '/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
-  #response = s3.get_object(Bucket='user-input-image',Key='IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg',)
-  #img_read = response['Body'].read()
-  #import base64
-  #import io
-  #b = base64.b64decode(img_read)
-  #image_p = Image.open(io.BytesIO(b))
-  #image_p.save('img.jpg')
   image = Image.open('/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
-  # old: image = Image.open(imagepath)
   small_image = image.resize((224,224)) # input size for VGG16 224,224
   small_imgarr = np.array(small_image)
   img = np.expand_dims(small_imgarr, axis=0)
@@ -44,8 +35,6 @@ def image_class(event, context):
   # CHANGE IMAGES TO IMPORT FROM S3
   s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
   df = pd.read_csv('/tmp/BigCSV.csv')
-  # Set up client to read images from S3
-  s3_client = boto3.client('s3')
 
   """# Cosine Similarity"""
 
@@ -81,19 +70,14 @@ def image_class(event, context):
 
   tot_lat = 0
   tot_lon = 0
-
   for i in range(0,5):
     # get gps data from dataframe at same indexes as images
     # print(df['GPSLatitude'][finderIndex[i]], df['GPSLongitude'][finderIndex[i]])
     tot_lat = tot_lat + float(df['GPSLatitude'][sort_index[i]])
     tot_lon = tot_lon + float(df['GPSLongitude'][sort_index[i]])
 
-  """Get distances from test image gps coordinates to outputted image gps coordinates"""
-
   import math
   # do once prediction is figured out
   avg_lat = tot_lat / 5
   avg_lon = tot_lon / 5
   return avg_lat, avg_lon
-
-
