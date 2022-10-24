@@ -15,221 +15,26 @@ def image_class(event, context):
   import pandas as pd
   from pandas import DataFrame
 
-  model = keras.models.load_model('s3://aggie-map-ml-model/404-Aug3/') # need to change path to S3
+  model = keras.models.load_model('404-KCV/') # need to change path to S3
 
   # label our data in batches
-  CLASS_NAMES = ['CHEN1', 'CHEN2', 'CHEN3', 'CVLB1', 'CVLB2', 'DLEB1', 'ETB1', 'ETB2', 'ETB3', 'ETB4', 'ETB5', 'HEB1', 'HEB2', 'HEB3', 'HEB4', 'MEOB1', 'MEOB2', 'MEOB3', 'PETE1', 'PETE2', 'PETE3', 'WEB1', 'WEB2', 'WEB3', 'WEB4', 'ZACH1', 'ZACH2', 'ZACH3', 'ZACH4', 'ZACH5', 'ZACH6']
+  CLASS_NAMES= ['ZACH6', 'ZACH5', 'ZACH4', 'ZACH3', 'ZACH2', 'ZACH1', 'WEB4', 'WEB3', 'WEB2', 'WEB1', 'PETE3', 'PETE2', 'PETE1', 'MEOB3', 'MEOB2', 'MEOB1', 'HEB4', 'HEB3', 'HEB2', 'HEB1', 'ETB5', 'ETB4', 'ETB3', 'ETB2', 'ETB1', 'DLEB1', 'CVLB2', 'CVLB1', 'CHEN3', 'CHEN2', 'CHEN1']
 
   # Prediction
   from keras.preprocessing import image
   imagepath = 's3://user-input-image/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg' # need to do user image
-  img = image.load_img(imagepath,target_size=(224,224))
-  img = np.asarray(img)
-  img = np.expand_dims(img, axis=0)
+  import boto3
+  s3 = boto3.resource('s3')
+  s3.Bucket('user-input-image').download_file('IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg', '/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  image = Image.open('/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  small_image = image.resize((224,224)) # input size for VGG16 224,224
+  small_imgarr = np.array(small_image)
+  img = np.expand_dims(small_imgarr, axis=0)
   output = model.predict(img)
-  print(np.argmax(output), CLASS_NAMES[np.argmax(output)], np.max(output))
 
   # CHANGE IMAGES TO IMPORT FROM S3
-  df = pd.read_csv('s3://augmented-database-31000/BigCSV.csv')
-  ImageList = [] # list for images
-  for i in range(0, 31000): # total number of images in dataset
-    imagepath = 's3://augmented-database-31000/404MegaDS - Numeric/IMG_' + df['FileName'][i][4:10] + '.jpg'
-    image = Image.open(imagepath)
-    small_image = image.resize((224,224)) # input size for VGG16 224,224
-    small_imgarr = np.array(small_image)
-    ImageList.append(small_imgarr) # array of all the images
-
-
-  # separate out images by class for use in similarity later --MODIFY LATER
-  Sim1 = []
-  Sim2 = []
-  Sim3 = []
-  Sim4 = []
-  Sim5 = []
-  Sim6 = []
-  Sim7 = []
-  Sim8 = []
-  Sim9 = []
-  Sim10 = []
-  Sim11 = []
-  Sim12 = []
-  Sim13 = []
-  Sim14 = []
-  Sim15 = []
-  Sim16 = []
-  Sim17 = []
-  Sim18 = []
-  Sim19 = []
-  Sim20 = []
-  Sim21 = []
-  Sim22 = []
-  Sim23 = []
-  Sim24 = []
-  Sim25 = []
-  Sim26 = []
-  Sim27 = []
-  Sim28 = []
-  Sim29 = []
-  Sim30 = []
-  Sim31 = []
-  # for tracking original image index in ImageList - MODIFY LATER
-  idx1 = []
-  idx2 = []
-  idx3 = []
-  idx4 = []
-  idx5 = []
-  idx6 = []
-  idx7 = []
-  idx8 = []
-  idx9 = []
-  idx10 = []
-  idx11 = []
-  idx12 = []
-  idx13 = []
-  idx14 = []
-  idx15 = []
-  idx16 = []
-  idx17 = []
-  idx18 = []
-  idx19 = []
-  idx20 = []
-  idx21 = []
-  idx22 = []
-  idx23 = []
-  idx24 = []
-  idx25 = []
-  idx26 = []
-  idx27 = []
-  idx28 = []
-  idx29 = []
-  idx30 = []
-  idx31 = []
-
-
-  for i in range (0,1000): # CHEN1 (0g 0-500) 0-499 = 1-500
-    Sim1.append(ImageList[i])
-    idx1.append(i)
-
-  for i in range (1000, 2000): # CHEN2 500-1000 = 501 - 1000
-    Sim2.append(ImageList[i])
-    idx2.append(i)
-
-  for i in range(2000, 3000): # CHEN3 1000-1500 = 1001 - 1500
-    Sim3.append(ImageList[i])
-    idx3.append(i)
-
-  for i in range(3000, 4000): # CVLB1
-    Sim4.append(ImageList[i])
-    idx4.append(i)
-
-  for i in range(4000, 5000): # CVLB2
-    Sim5.append(ImageList[i])
-    idx5.append(i)
-
-  for i in range(5000, 6000): # DLEB1
-    Sim6.append(ImageList[i])
-    idx6.append(i)
-
-  for i in range(6000, 7000): # ETB1
-    Sim7.append(ImageList[i])
-    idx7.append(i)
-
-  for i in range(7000, 8000): # ETB2
-    Sim8.append(ImageList[i])
-    idx8.append(i)
-
-  for i in range(8000, 9000): # ETB3
-    Sim9.append(ImageList[i])
-    idx9.append(i)
-
-  for i in range(9000, 10000): # ETB4
-    Sim10.append(ImageList[i])
-    idx10.append(i)
-
-  for i in range(10000, 11000): # ETB5
-    Sim11.append(ImageList[i])
-    idx11.append(i)
-
-  for i in range(11000, 12000): # HEB1
-    Sim12.append(ImageList[i])
-    idx12.append(i)
-
-  for i in range(12000, 13000): # HEB2
-    Sim13.append(ImageList[i])
-    idx13.append(i)
-
-  for i in range(13000, 14000): # HEB3
-    Sim14.append(ImageList[i])
-    idx14.append(i)
-
-  for i in range(14000, 15000): # HEB4
-    Sim15.append(ImageList[i])
-    idx15.append(i)
-
-  for i in range(15000, 16000): # MEOB1
-    Sim16.append(ImageList[i])
-    idx16.append(i)
-
-  for i in range(16000, 17000): # MEOB2
-    Sim17.append(ImageList[i])
-    idx17.append(i)
-
-  for i in range(17000, 18000): # MEOB3
-    Sim18.append(ImageList[i])
-    idx18.append(i)
-
-  for i in range(18000, 19000): # PETE1
-    Sim19.append(ImageList[i])
-    idx19.append(i)
-
-  for i in range(19000, 20000): # PETE2
-    Sim20.append(ImageList[i])
-    idx20.append(i)
-
-  for i in range(20000, 21000): # PETE3
-    Sim21.append(ImageList[i])
-    idx21.append(i)
-
-  for i in range(21000, 22000): # WEB1
-    Sim22.append(ImageList[i])
-    idx22.append(i)
-
-  for i in range(22000, 23000): # WEB2
-    Sim23.append(ImageList[i])
-    idx23.append(i)
-
-  for i in range(23000, 24000): # WEB3
-    Sim24.append(ImageList[i])
-    idx24.append(i)
-
-  for i in range(24000, 25000): # WEB4
-    Sim25.append(ImageList[i])
-    idx25.append(i)
-
-  for i in range(25000, 26000): # ZACH1
-    Sim26.append(ImageList[i])
-    idx26.append(i)
-
-  for i in range(26000, 27000): # ZACH2
-    Sim27.append(ImageList[i])
-    idx27.append(i)
-
-  for i in range(27000, 28000): # ZACH3
-    Sim28.append(ImageList[i])
-    idx28.append(i)
-
-  for i in range(28000, 29000): # ZACH4
-    Sim29.append(ImageList[i])
-    idx29.append(i)
-
-  for i in range(29000, 30000): # ZACH5
-    Sim30.append(ImageList[i])
-    idx30.append(i)
-
-  for i in range(30000, 31000): # ZACH6
-    Sim31.append(ImageList[i])
-    idx31.append(i)
-
+  s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
+  df = pd.read_csv('/tmp/BigCSV.csv')
 
   """# Cosine Similarity"""
 
@@ -243,285 +48,14 @@ def image_class(event, context):
   indexHold = [] # array for holding original ImageList index of images from individual classes in SimHold
 
   # only does cosine distance between test image and images from database of its class
-  if np.argmax(output) == 0:
-    for i in range(0,len(Sim1)):
-      SimHold.append(Sim1[i])
-      indexHold.append(idx1[i])
-      compArray = Sim1[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 1:
-    for i in range(0,len(Sim2)):
-      SimHold.append(Sim2[i])
-      indexHold.append(idx2[i])
-      compArray = Sim2[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 2:
-    for i in range(0,len(Sim3)):
-      SimHold.append(Sim3[i])
-      indexHold.append(idx3[i])
-      compArray = Sim3[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 3:
-    for i in range(0,len(Sim4)):
-      SimHold.append(Sim4[i])
-      indexHold.append(idx4[i])
-      compArray = Sim4[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 4:
-    for i in range(0,len(Sim5)):
-      SimHold.append(Sim5[i])
-      indexHold.append(idx5[i])
-      compArray = Sim5[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 5:
-    for i in range(0,len(Sim6)):
-      SimHold.append(Sim6[i])
-      indexHold.append(idx6[i])
-      compArray = Sim6[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 6:
-    for i in range(0,len(Sim7)):
-      SimHold.append(Sim7[i])
-      indexHold.append(idx7[i])
-      compArray = Sim7[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 7:
-    for i in range(0,len(Sim8)):
-      SimHold.append(Sim8[i])
-      indexHold.append(idx8[i])
-      compArray = Sim8[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 8:
-    for i in range(0,len(Sim9)):
-      SimHold.append(Sim9[i])
-      indexHold.append(idx9[i])
-      compArray = Sim9[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 9:
-    for i in range(0,len(Sim10)):
-      SimHold.append(Sim10[i])
-      indexHold.append(idx10[i])
-      compArray = Sim10[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 10:
-    for i in range(0,len(Sim11)):
-      SimHold.append(Sim11[i])
-      indexHold.append(idx11[i])
-      compArray = Sim11[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 11:
-    for i in range(0,len(Sim12)):
-      SimHold.append(Sim12[i])
-      indexHold.append(idx12[i])
-      compArray = Sim12[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 12:
-    for i in range(0,len(Sim13)):
-      SimHold.append(Sim13[i])
-      indexHold.append(idx13[i])
-      compArray = Sim13[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 13:
-    for i in range(0,len(Sim14)):
-      SimHold.append(Sim14[i])
-      indexHold.append(idx14[i])
-      compArray = Sim14[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 14:
-    for i in range(0,len(Sim15)):
-      SimHold.append(Sim15[i])
-      indexHold.append(idx15[i])
-      compArray = Sim15[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 15:
-    for i in range(0,len(Sim16)):
-      SimHold.append(Sim16[i])
-      indexHold.append(idx16[i])
-      compArray = Sim16[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 16:
-    for i in range(0,len(Sim17)):
-      SimHold.append(Sim17[i])
-      indexHold.append(idx17[i])
-      compArray = Sim17[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 17:
-    for i in range(0,len(Sim18)):
-      SimHold.append(Sim18[i])
-      indexHold.append(idx18[i])
-      compArray = Sim18[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 18:
-    for i in range(0,len(Sim19)):
-      SimHold.append(Sim19[i])
-      indexHold.append(idx19[i])
-      compArray = Sim19[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 19:
-    for i in range(0,len(Sim20)):
-      SimHold.append(Sim20[i])
-      indexHold.append(idx20[i])
-      compArray = Sim20[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 20:
-    for i in range(0,len(Sim21)):
-      SimHold.append(Sim21[i])
-      indexHold.append(idx21[i])
-      compArray = Sim21[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 21:
-    for i in range(0,len(Sim22)):
-      SimHold.append(Sim22[i])
-      indexHold.append(idx22[i])
-      compArray = Sim22[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 22:
-    for i in range(0,len(Sim23)):
-      SimHold.append(Sim23[i])
-      indexHold.append(idx23[i])
-      compArray = Sim23[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 23:
-    for i in range(0,len(Sim24)):
-      SimHold.append(Sim24[i])
-      indexHold.append(idx24[i])
-      compArray = Sim24[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 24:
-    for i in range(0,len(Sim25)):
-      SimHold.append(Sim25[i])
-      indexHold.append(idx25[i])
-      compArray = Sim25[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 25:
-    for i in range(0,len(Sim26)):
-      SimHold.append(Sim26[i])
-      indexHold.append(idx26[i])
-      compArray = Sim26[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 26:
-    for i in range(0,len(Sim27)):
-      SimHold.append(Sim27[i])
-      indexHold.append(idx27[i])
-      compArray = Sim27[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 27:
-    for i in range(0,len(Sim28)):
-      SimHold.append(Sim28[i])
-      indexHold.append(idx28[i])
-      compArray = Sim28[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 28:
-    for i in range(0,len(Sim29)):
-      SimHold.append(Sim29[i])
-      indexHold.append(idx29[i])
-      compArray = Sim29[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 29:
-    for i in range(0,len(Sim30)):
-      SimHold.append(Sim30[i])
-      indexHold.append(idx30[i])
-      compArray = Sim30[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
-  elif np.argmax(output) == 30:
-    for i in range(0,len(Sim31)):
-      SimHold.append(Sim31[i])
-      indexHold.append(idx31[i])
-      compArray = Sim31[i]
-      compArray = compArray.flatten()
-      dist = 1 - spatial.distance.cosine(TestArray, compArray)
-      SimArray.append(dist)
-
+  for i in range(output*1000, (output+1)*1000): # total number of images in dataset
+    imagepath = '/tmp/IMG_' + df['FileName'][i][4:10] + '.jpg'
+    image = Image.open(imagepath)
+    compArray = np.array(image)
+    compArray = compArray.flatten()
+    dist = 1 - spatial.distance.cosine(TestArray, compArray)
+    SimArray.append(dist)
+    indexHold.append(i)
 
   """Sort Array to get top 5 images"""
 
@@ -529,46 +63,21 @@ def image_class(event, context):
   import scipy.misc
   from scipy import ndimage
 
-  # get top 5 similarity percentages
-  sortedArr = np.sort(SimArray)
-  sortedArr = sortedArr[::-1] # reverse array order so it goes max to min
-  sortedArr = sortedArr[0:5]
-  # print(sortedArr) # prints similarity percentages
-
   # get indexes of these percentages to pull the images
   sort_index = np.argsort(SimArray)
   sort_index = sort_index[::-1]
-
-  # get indexHold to be sorted in same way that sortedarr is using sort_index
-  finderIndex = []
-  for i in range(0, len(indexHold)):
-    x = sort_index[i]
-    finderIndex.append(indexHold[x])
-
-  finderIndex = np.asarray(finderIndex)
-
-  # top 5 images indexed from original ImageList are:
-  top5_index = finderIndex[0:5]
-  print(top5_index)
+  sort_index = (output*1000) + sort_index
 
   tot_lat = 0
   tot_lon = 0
-  print(type(tot_lat))
-
   for i in range(0,5):
-    print(finderIndex[i])
     # get gps data from dataframe at same indexes as images
     # print(df['GPSLatitude'][finderIndex[i]], df['GPSLongitude'][finderIndex[i]])
-    tot_lat = tot_lat + float(df['GPSLatitude'][top5_index[i]])
-    tot_lon = tot_lon + float(df['GPSLongitude'][top5_index[i]])
-
-  """Get distances from test image gps coordinates to outputted image gps coordinates"""
+    tot_lat = tot_lat + float(df['GPSLatitude'][sort_index[i]])
+    tot_lon = tot_lon + float(df['GPSLongitude'][sort_index[i]])
 
   import math
   # do once prediction is figured out
   avg_lat = tot_lat / 5
   avg_lon = tot_lon / 5
   return avg_lat, avg_lon
-
-  #print(avg_lat)
-  #print(avg_lon)

@@ -6,6 +6,8 @@ RUN pip install keras &&\
     pip install scipy &&\
     pip install matplotlib &&\
     pip install fs-s3fs &&\
+    pip install s3fs &&\
+    pip install fsspec &&\
     pip install zipfile36 &&\
     pip install tempfile2
 CMD [ "machine_learning.image_class" ]
