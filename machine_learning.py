@@ -32,6 +32,8 @@ def image_class(event, context):
   img = np.expand_dims(small_imgarr, axis=0)
   output = model.predict(img)
 
+  print(output)
+
   # CHANGE IMAGES TO IMPORT FROM S3
   s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
   df = pd.read_csv('/tmp/BigCSV.csv')
