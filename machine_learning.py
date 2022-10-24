@@ -32,7 +32,7 @@ def image_class(event, context):
   img = np.expand_dims(small_imgarr, axis=0)
   output = model.predict(img)
 
-  print(output)
+  print(np.argmax(output))
 
   # CHANGE IMAGES TO IMPORT FROM S3
   s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
@@ -50,8 +50,8 @@ def image_class(event, context):
   indexHold = [] # array for holding original ImageList index of images from individual classes in SimHold
 
   # only does cosine distance between test image and images from database of its class
-  for i in range(output*1000, (output+1)*1000): # total number of images in dataset
-    imagepath = '/tmp/IMG_' + df['FileName'][i][4:10] + '.jpg'
+  for i in range(np.argmax(output)*1000, (np.argmax(output)+1)*1000): # total number of images in dataset
+    imagepath = 'content/IMG_' + df['FileName'][i][4:10] + '.jpg'
     image = Image.open(imagepath)
     compArray = np.array(image)
     compArray = compArray.flatten()
@@ -68,7 +68,7 @@ def image_class(event, context):
   # get indexes of these percentages to pull the images
   sort_index = np.argsort(SimArray)
   sort_index = sort_index[::-1]
-  sort_index = (output*1000) + sort_index
+  sort_index = (np.argmax(output)*1000) + sort_index
 
   tot_lat = 0
   tot_lon = 0
