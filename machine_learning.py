@@ -34,9 +34,8 @@ def image_class(event, context):
 
   print(np.argmax(output))
 
-  # CHANGE IMAGES TO IMPORT FROM S3
-  s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
-  df = pd.read_csv('/tmp/BigCSV.csv')
+  # dataframe of all of the database coordinates
+  df = pd.read_csv('FINAL_CSV.csv')
 
   """# Cosine Similarity"""
 
