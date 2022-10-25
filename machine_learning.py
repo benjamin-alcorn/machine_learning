@@ -69,6 +69,8 @@ def image_class(event, context):
   sort_index = np.argsort(SimArray)
   sort_index = sort_index[::-1]
   sort_index = (np.argmax(output)*1000) + sort_index
+  print("sort_index:")
+  print(sort_index[0:5])
 
   tot_lat = 0
   tot_lon = 0
