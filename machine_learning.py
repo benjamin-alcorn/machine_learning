@@ -22,11 +22,11 @@ def image_class(event, context):
 
   # Prediction
   from keras.preprocessing import image
-  imagepath = 's3://user-input-image/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg' # need to do user image
+  imagepath = 'user-image.jpg' # need to do user image
   import boto3
   s3 = boto3.resource('s3')
-  s3.Bucket('user-input-image').download_file('IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg', '/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
-  image = Image.open('/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  s3.Bucket('user-input-image').download_file('user-image.jpg', '/tmp/user-image.jpg')
+  image = Image.open('/tmp/user-image.jpg')
   small_image = image.resize((224,224)) # input size for VGG16 224,224
   small_imgarr = np.array(small_image)
   img = np.expand_dims(small_imgarr, axis=0)
