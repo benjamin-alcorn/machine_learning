@@ -83,4 +83,19 @@ def image_class(event, context):
   # do once prediction is figured out
   avg_lat = tot_lat / 5
   avg_lon = tot_lon / 5
+
+  import csv
+  s3 = boto3.resource('s3')
+  s3.Bucket('user-input-image').download_file('end_coordinates.csv', '/tmp/end_coordinates.csv') 
+  CSVData = open('/tmp/end_coordinates.csv')
+  coord_arr = np.genfromtxt(CSVData, delimiter=",")
+  coord_arr[0,0] = avg_lat;
+  coord_arr[0,1] = avg_lon;
+
+  temp_csv_file = csv.writer(open("/tmp/start_end_coordinates.csv", "w+"))
+  np.savetxt('/tmp/start_end_coordinates.csv', coord_arr, delimiter=",")
+  BUCKET_NAME = 'user-input-image'
+  client = boto3.client('s3')
+  client.upload_file('/tmp/start_end_coordinates.csv', BUCKET_NAME,'start_end_coordinates.csv')
+
   return avg_lat, avg_lon
