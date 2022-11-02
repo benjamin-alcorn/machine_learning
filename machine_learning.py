@@ -22,19 +22,20 @@ def image_class(event, context):
 
   # Prediction
   from keras.preprocessing import image
-  imagepath = 's3://user-input-image/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg' # need to do user image
+  imagepath = 'user-image.jpg' # need to do user image
   import boto3
   s3 = boto3.resource('s3')
-  s3.Bucket('user-input-image').download_file('IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg', '/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
-  image = Image.open('/tmp/IMG_000204_JPG_jpg.rf.5bce6720f6ac554c1ff12be02641849a.jpg')
+  s3.Bucket('user-input-image').download_file('user-image.jpg', '/tmp/user-image.jpg')
+  image = Image.open('/tmp/user-image.jpg')
   small_image = image.resize((224,224)) # input size for VGG16 224,224
   small_imgarr = np.array(small_image)
   img = np.expand_dims(small_imgarr, axis=0)
   output = model.predict(img)
 
-  # CHANGE IMAGES TO IMPORT FROM S3
-  s3.Bucket('augmented-database-31000').download_file('BigCSV.csv', '/tmp/BigCSV.csv')
-  df = pd.read_csv('/tmp/BigCSV.csv')
+  print(np.argmax(output))
+
+  # dataframe of all of the database coordinates
+  df = pd.read_csv('FINAL_CSV.csv')
 
   """# Cosine Similarity"""
 
@@ -48,8 +49,8 @@ def image_class(event, context):
   indexHold = [] # array for holding original ImageList index of images from individual classes in SimHold
 
   # only does cosine distance between test image and images from database of its class
-  for i in range(output*1000, (output+1)*1000): # total number of images in dataset
-    imagepath = '/tmp/IMG_' + df['FileName'][i][4:10] + '.jpg'
+  for i in range(np.argmax(output)*1000, (np.argmax(output)+1)*1000): # total number of images in dataset
+    imagepath = 'content/IMG_' + df['FileName'][i][4:10] + '.jpg'
     image = Image.open(imagepath)
     compArray = np.array(image)
     compArray = compArray.flatten()
@@ -66,7 +67,9 @@ def image_class(event, context):
   # get indexes of these percentages to pull the images
   sort_index = np.argsort(SimArray)
   sort_index = sort_index[::-1]
-  sort_index = (output*1000) + sort_index
+  sort_index = (np.argmax(output)*1000) + sort_index
+  print("sort_index:")
+  print(sort_index[0:5])
 
   tot_lat = 0
   tot_lon = 0
